@@ -2,8 +2,8 @@ import 'dart:io';
 
 const originalProjectName = 'flota';
 const originalClassNamePrefix = 'Flota';
-const originalIOSBundleIdentifier = 'com.sj.flota';
-const originalAndroidPackageName = 'com.sj.flota';
+const originalIOSBundleIdentifier = 'com.swahilib';
+const originalAndroidPackageName = 'com.swahilib';
 const originalAndroidFolderPath = 'com/sj/flota';
 const originalAppName = 'Flota';
 const originalDescription = 'A Flota to get started quickly';

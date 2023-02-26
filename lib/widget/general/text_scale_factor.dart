@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flota/util/env/flavor_config.dart';
+
+import '../../util/env/flavor_config.dart';
 
 class TextScaleFactor extends StatelessWidget {
   final Widget child;
 
   const TextScaleFactor({
     required this.child,
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

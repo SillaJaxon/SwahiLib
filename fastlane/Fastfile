@@ -114,7 +114,7 @@ lane :prod_android do
   prepareBuild
   buildAppBundleAndroid(flavor: 'prod')
   sh("echo","Uploading to Google Play is disabled.")
-  #deployToPlayStore(flavor: 'prod', package_name: 'com.sj.flota')
+  #deployToPlayStore(flavor: 'prod', package_name: 'com.swahilib')
   add_tag                 # Add tag
   git_reset
 end
@@ -164,7 +164,7 @@ end
 private_lane :prod_ios_build do
   buildAppIOSOnly(flavor: 'prod')
   sh("echo","Enter `apple_id` in the prod_ios_build lane")
-  #buildAndDeployToAppStore(flavor: 'prod', configuration: 'Release-prod', identifier: 'com.sj.flota', apple_id: '')
+  #buildAndDeployToAppStore(flavor: 'prod', configuration: 'Release-prod', identifier: 'com.swahilib', apple_id: '')
 end
 
 ## The analysis_options_all_files is used to check that all files can compile. even the once ignored in the original analysis_options.yaml
@@ -250,10 +250,10 @@ private_lane :convertAppToIpa do |options|
             export_options: {
                 method: "enterprise",
                 provisioningProfiles: {
-                    "com.sj.flota.dev" => "Flota Debug",
-                    "com.sj.flota.alpha" => "Flota Alpha",
-                    "com.sj.flota.beta" => "Flota Beta",
-                    "com.sj.flota" => "Flota Production"
+                    "com.swahilib.dev" => "Flota Debug",
+                    "com.swahilib.alpha" => "Flota Alpha",
+                    "com.swahilib.beta" => "Flota Beta",
+                    "com.swahilib" => "Flota Production"
                 }
             }
         )
@@ -337,10 +337,10 @@ private_lane :buildIosAppStore do |options|
       export_options: {
         method: 'app-store',
         provisioningProfiles: {
-            "com.sj.flota.dev" => "Flota Debug",
-            "com.sj.flota.alpha" => "Flota Alpha",
-            "com.sj.flota.beta" => "Flota Beta",
-            "com.sj.flota" => "Flota Production"
+            "com.swahilib.dev" => "Flota Debug",
+            "com.swahilib.alpha" => "Flota Alpha",
+            "com.swahilib.beta" => "Flota Beta",
+            "com.swahilib" => "Flota Production"
         }
       }
     )

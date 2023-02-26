@@ -1,76 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flota/di/injectable.dart';
-import 'package:flota/navigator/main_navigator.dart';
-import 'package:flota/styles/theme_data.dart';
-import 'package:flota/util/locale/localization_fallback_cupertino_delegate.dart';
-import 'package:flota/viewmodel/global/global_viewmodel.dart';
-import 'package:flota/widget/general/flavor_banner.dart';
-import 'package:flota/widget/general/text_scale_factor.dart';
-import 'package:flota/widget/provider/provider_widget.dart';
-import 'package:get/get.dart';
+import 'package:get_it/get_it.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk.dart';
+import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
+
+import 'navigator/main_navigator.dart';
+import 'theme/theme_data.dart';
+import 'util/constants/api_constants.dart';
+import 'util/env/flavor_config.dart';
+import 'util/i10n/app_localizations.dart';
+import 'vm/global_vm.dart';
+import 'widget/provider/provider_widget.dart';
+
+void startApp() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Parse().initialize(
+    ApiConstants.applicationID,
+    ApiConstants.parseApiUrl,
+    clientKey: ApiConstants.clientKey,
+    autoSendSessionId: true,
+  );
+
+  await SentryFlutter.init(
+    (options) {
+      options.dsn =
+          'https://704a7eba4e654566beb30a98e786da51@o1365314.ingest.sentry.io/6660908';
+      options.tracesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(const MyApp()),
+  );
+}
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-    ));
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     return const InternalApp();
   }
 }
 
 class InternalApp extends StatelessWidget {
   final Widget? home;
-  final bool _isInTest;
 
   const InternalApp({Key? key})
       : home = null,
-        _isInTest = false,
         super(key: key);
 
   @visibleForTesting
-  const InternalApp.test({
-    required this.home,
-    super.key,
-  }) : _isInTest = true;
+  const InternalApp.test({required this.home, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ProviderWidget<GlobalViewModel>(
-      create: () => getIt()..init(),
-      lazy: _isInTest,
-      consumer: (context, viewModel, consumerChild) => GetMaterialApp(
-        debugShowCheckedModeBanner: !_isInTest,
-        localizationsDelegates: [
-          if (viewModel.localeDelegate != null) viewModel.localeDelegate!,
-          ...GlobalMaterialLocalizations.delegates,
+    return ProviderWidget<GlobalVm>(
+      lazy: FlavorConfig.isInTest(),
+      create: () => GetIt.I()..init(context),
+      consumer: (context, vm, consumerChild) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
-          FallbackCupertinoLocalisationsDelegate.delegate,
+          GlobalCupertinoLocalizations.delegate,
         ],
-        locale: viewModel.locale,
-        supportedLocales: viewModel.supportedLocales,
-        themeMode: viewModel.themeMode,
-        theme: FlotaThemeData.lightTheme(viewModel.targetPlatform),
-        darkTheme: FlotaThemeData.darkTheme(viewModel.targetPlatform),
-        initialRoute: home == null ? MainNavigator.initialRoute : null,
-        getPages: MainNavigator.pages,
-        home: home,
+        supportedLocales: const [Locale('en'), Locale('sw')],
+        theme: Provider.of<GlobalVm>(context).isDarkMode
+            ? AppThemeData.lightTheme(vm.targetPlatform)
+            : AppThemeData.darkTheme(vm.targetPlatform),
+        navigatorKey: MainNavigatorState.navigationKey,
+        initialRoute:
+            home == null ? MainNavigatorState.initialRoute : null,
+        onGenerateRoute: MainNavigatorState.onGenerateRoute,
+        navigatorObservers: MainNavigatorState.navigatorObservers,
         builder: home == null
-            ? (context, child) => FlavorBanner(
-                  child: TextScaleFactor(
-                    child: child ?? const SizedBox.shrink(),
-                  ),
-                )
+            ? (context, child) => MainNavigator(child: child)
             : null,
+        home: home,
       ),
     );
   }

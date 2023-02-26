@@ -1,18 +1,42 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flota/app.dart';
-import 'package:flota/di/environments.dart';
-import 'package:flota/di/injectable.dart';
-import 'package:flota/main_common.dart';
-import 'package:flota/util/env/flavor_config.dart';
-import 'package:flota/util/inspector/database_inspector.dart';
-import 'package:flota/util/inspector/local_storage_inspector.dart';
-import 'package:flota/util/inspector/niddler.dart';
+
+import 'package:icapps_architecture/icapps_architecture.dart';
+
+import 'app.dart';
+import 'architecture.dart';
+import 'di/environments.dart';
+import 'di/injectable.dart';
+import 'util/env/flavor_config.dart';
+import 'util/web/app_configurator.dart'
+    if (dart.library.html) 'util/web/app_configurator_web.dart';
+
+FutureOr<R>? wrapMain<R>(FutureOr<R> Function() appCode) {
+  return runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    configureWebApp();
+    await initArchitecture();
+
+    return await appCode();
+  }, (object, trace) {
+    try {
+      WidgetsFlutterBinding.ensureInitialized();
+    } catch (_) {}
+
+    try {
+      staticLogger.e('Zone error', error: object, trace: trace);
+    } catch (_) {
+      // ignore: avoid_print
+      print(object);
+      // ignore: avoid_print
+      print(trace);
+    }
+  });
+}
 
 Future<void> main() async {
   await wrapMain(() async {
-    await initNiddler();
     const values = FlavorValues(
-      baseUrl: 'https://jsonplaceholder.typicode.com/',
       logNetworkInfo: true,
       showFullErrorMessages: true,
     );
@@ -25,9 +49,7 @@ Future<void> main() async {
     // ignore: avoid_print
     print('Starting app from main.dart');
     await configureDependencies(Environments.dev);
-    await addDatabaseInspector();
-    await initAllStorageInspectors();
 
-    runApp(const MyApp());
+    startApp();
   });
 }

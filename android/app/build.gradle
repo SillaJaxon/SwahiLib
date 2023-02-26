@@ -24,6 +24,12 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('keystore/key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
   buildToolsVersion "30.0.0"
   compileSdkVersion 33
@@ -38,7 +44,7 @@ android {
   }
 
   defaultConfig {
-    applicationId "com.sj.flota"
+    applicationId "com.swahilib"
     minSdkVersion 21
     targetSdkVersion 33
     compileSdkVersion 33
@@ -50,10 +56,10 @@ android {
 
   signingConfigs {
     release {
-      storeFile file("../keystore/release.keystore")
-      storePassword "your-store-alias"
-      keyAlias "your-key-alias"
-      keyPassword "your-key-password"
+        keyAlias keystoreProperties['keyAlias']
+        keyPassword keystoreProperties['keyPassword']
+        storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+        storePassword keystoreProperties['storePassword']
     }
   }
 
@@ -68,27 +74,17 @@ android {
     }
   }
 
-  flavorDimensions "flavors"
+  /*flavorDimensions "flavors"
   productFlavors {
     dev {
       dimension "flavors"
       applicationIdSuffix ".debug"
       versionNameSuffix "-debug"
     }
-    alpha {
-      dimension "flavors"
-      applicationIdSuffix ".alpha"
-      versionNameSuffix "-alpha"
-    }
-    beta {
-      dimension "flavors"
-      applicationIdSuffix ".beta"
-      versionNameSuffix "-beta"
-    }
     prod {
       dimension "flavors"
     }
-  }
+  }*/
 }
 
 flutter {
@@ -101,6 +97,3 @@ dependencies {
   androidTestImplementation 'androidx.test.ext:junit:1.1.1'
   androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
 }
-
-apply plugin: 'com.google.gms.google-services'
-apply plugin: 'com.google.firebase.crashlytics'

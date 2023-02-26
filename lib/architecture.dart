@@ -1,11 +1,12 @@
 import 'package:flutter/widgets.dart';
-import 'package:flota/styles/theme_data.dart';
-import 'package:flota/util/locale/localization.dart';
 import 'package:icapps_architecture/icapps_architecture.dart';
 
-L _getLocale<L>(BuildContext context) => Localization.of(context) as L;
+import 'theme/theme_data.dart';
+import 'util/i10n/app_localizations.dart';
 
-T _getTheme<T>(BuildContext context) => FlotaTheme.of(context) as T;
+L _getLocale<L>(BuildContext context) => AppLocalizations.of(context) as L;
+
+T _getTheme<T>(BuildContext context) => AppTheme.of(context) as T;
 
 Future<void> initArchitecture() async {
   await OsInfo.init();
